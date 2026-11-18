@@ -1,5 +1,6 @@
 package modelo;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Equipo {
@@ -10,6 +11,16 @@ public class Equipo {
     private String delegado;
     private String telefonoDelegado;
     private List<Jugador> jugadores;
+
+    //Constructor
+    public Equipo(String nombre, String barrio, String delegado, String telefonoDelegado) {
+        //TODO: validar los datos con Validador
+        this.nombre = nombre;
+        this.barrio = barrio;
+        this.delegado = delegado;
+        this.telefonoDelegado = telefonoDelegado;
+        this.jugadores = new ArrayList<>();
+    }
 
     //Metodos
     public void agregarJugador(Jugador jugador) {
@@ -38,5 +49,26 @@ public class Equipo {
 
     public int descontarFechas(Partido partido) {
         return 0;
+    }
+
+    //Getters y Setters
+    public String getNombre() {
+        return nombre;
+    }
+
+    public String getBarrio() {
+        return barrio;
+    }
+
+    public String getDelegado() {
+        return delegado;
+    }
+
+    public String getTelefonoDelegado() {
+        return telefonoDelegado;
+    }
+
+    public List<Jugador> getJugadores() {
+        return jugadores;
     }
 }
