@@ -1,5 +1,7 @@
 package modelo;
 
+import negocio.ReglasJuego;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,11 +12,10 @@ public class Equipo {
     private String barrio;
     private String delegado;
     private String telefonoDelegado;
-    private List<Jugador> jugadores;
+    private final List<Jugador> jugadores;
 
     //Constructor
     public Equipo(String nombre, String barrio, String delegado, String telefonoDelegado) {
-        //TODO: validar los datos con Validador
         this.nombre = nombre;
         this.barrio = barrio;
         this.delegado = delegado;
@@ -23,29 +24,47 @@ public class Equipo {
     }
 
     //Metodos
-    public void agregarJugador(Jugador jugador) {
 
+    //M1
+
+    public void agregarJugador(Jugador jugador) {
+        jugadores.add(jugador);
     }
 
     public boolean tieneCupo() {
-        return false;
+        return jugadores.size() < ReglasJuego.PLANTEL_MAXIMO;
     }
 
     public boolean camisetaDisponible(int numero) {
-        return false;
+        for(Jugador j : jugadores){
+            if(j.getNumeroCamiseta() == numero){
+                return false;
+            }
+        }
+        return true;
     }
 
     public int cantidadJugadores() {
-        return 0;
+        return jugadores.size();
     }
 
     public Jugador buscarJugador(String carne) {
+        for(Jugador j : jugadores){
+            if(j.getCarne().equals(carne)){
+                return j;
+            }
+        }
         return null;
     }
 
     public void modificar(String nombre, String barrio, String delegado, String telefono) {
-
+        this.nombre = nombre;
+        this.barrio = barrio;
+        this.delegado = delegado;
+        this.telefonoDelegado = telefono;
     }
+
+    //OTRO MODULO
 
     public int descontarFechas(Partido partido) {
         return 0;
