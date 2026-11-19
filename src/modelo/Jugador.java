@@ -1,6 +1,7 @@
 package modelo;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class Jugador {
                    LocalDate fechaNacimiento,
                    int numeroCamiseta,
                    Equipo equipo) {
-        //TODO: validar los datos con Validador
+
         this.carne = carne;
         this.nombres = nombres;
         this.apellidos = apellidos;
@@ -41,12 +42,19 @@ public class Jugador {
     }
 
     //Metodos
+
+    //M1
+
     public int calcularEdad() {
-        return 0;
+        int edad;
+        edad = Period.between(fechaNacimiento, LocalDate.now()).getYears();
+        return edad;
     }
 
+    //VERIFICAR MODULOS
+
     public boolean estaHabilitado() {
-        return false;
+        return estado == EstadoJugador.ACTIVO && fechasPendientes() == 0;
     }
 
     public void suspender() {
@@ -58,7 +66,8 @@ public class Jugador {
     }
 
     public void darDeBaja(String motivo) {
-
+        this.estado = EstadoJugador.DE_BAJA;
+        this.motivoBaja = motivo;
     }
 
     public Sancion sumarAmarilla(Partido partido) {
