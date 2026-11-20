@@ -1,3 +1,4 @@
+
 package negocio;
 
 import java.time.LocalDate;
@@ -26,19 +27,41 @@ public class Validador {
     public static void soloLetras(String texto, String campo) {
         obligatorio(texto, campo);
 
-        if (!texto.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ ]+")) {
-            throw new IllegalArgumentException(
-                    "El campo " + campo + " solo debe contener letras.");
+        int i = 0;
+
+        while (i < texto.length()) {
+            char letra = texto.charAt(i);
+
+            if (!Character.isLetter(letra) && letra != ' ') {
+                throw new IllegalArgumentException(
+                        "El campo " + campo + " solo debe contener letras.");
+            }
+
+            i++;
         }
     }
 
     public static void soloDigitos(String texto, int cantidad, String campo) {
         obligatorio(texto, campo);
 
-        if (!texto.matches("[0-9]+") || texto.length() != cantidad) {
+        if (texto.length() != cantidad) {
             throw new IllegalArgumentException(
                     "El campo " + campo + " debe contener exactamente "
                             + cantidad + " dígitos.");
+        }
+
+        int i = 0;
+
+        while (i < texto.length()) {
+            char digito = texto.charAt(i);
+
+            if (digito < '0' || digito > '9') {
+                throw new IllegalArgumentException(
+                        "El campo " + campo + " debe contener exactamente "
+                                + cantidad + " dígitos.");
+            }
+
+            i++;
         }
     }
 
@@ -51,15 +74,28 @@ public class Validador {
     }
 
     public static boolean cedulaValida(String cedula) {
-        if (cedula == null || !cedula.matches("[0-9]{10}")) {
+        if (cedula == null || cedula.length() != 10) {
             return false;
         }
 
-        for (int i = 1; i < cedula.length(); i++) {
+        int i = 0;
+
+        while (i < cedula.length()) {
+            char digito = cedula.charAt(i);
+
+            if (digito < '0' || digito > '9') {
+                return false;
+            }
+
+            i++;
+        }
+
+        for (i = 1; i < cedula.length(); i++) {
             if (cedula.charAt(i) != cedula.charAt(0)) {
                 return true;
             }
         }
+
         return false;
     }
 
@@ -72,7 +108,6 @@ public class Validador {
 
     public static LocalDate fechaValida(String texto) {
         obligatorio(texto, "fecha");
-
 
         DateTimeFormatter formato = DateTimeFormatter
                 .ofPattern("dd/MM/uuuu")
