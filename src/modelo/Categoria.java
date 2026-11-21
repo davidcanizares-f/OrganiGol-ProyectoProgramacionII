@@ -4,7 +4,7 @@ public enum Categoria {
 
     INFANTIL(6, 12),
     FEMENINO(15, 99),
-    PRIMERA(18, 34),
+    PRIMERA(18, 99),
     MASTER(35, 99);
 
     private final int edadMinima;
