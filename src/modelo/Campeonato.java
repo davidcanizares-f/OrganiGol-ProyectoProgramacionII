@@ -27,18 +27,18 @@ public class Campeonato {
     //Metodos
 
     //M2
-
     public void configurar(String nombre, Categoria categoria) {
-
-    }
-
-    public void modificar(String nombre, Categoria categoria) {
 
     }
 
     public boolean estaConfigurado() {
         return false;
     }
+
+    public void modificar(String nombre, Categoria categoria) {
+
+    }
+
 
     public boolean estaListo() {
         return false;
@@ -164,7 +164,7 @@ public class Campeonato {
             return "Error: se alcanzó el límite máximo de 9999 carnés.";
         }
 
-        //Si todo esta bien
+        //Sitodo esta bien
         return null;
     }
 
@@ -242,17 +242,6 @@ public class Campeonato {
         return null;
     }
 
-    public List<Partido> partidosCerrados() {
-        return null;
-    }
-
-    public List<TablaPosiciones> calcularTabla() {
-        return null;
-    }
-
-    public List<TablaGoleadores> calcularGoleadores() {
-        return null;
-    }
 
     public List<Sancion> sancionesVigentes(Equipo equipo) {
         return null;
@@ -277,5 +266,164 @@ public class Campeonato {
 
     public int getUltimoCarne() {
         return ultimoCarne;
+    }
+
+    // ======================================================================================
+    // M O D U L O  4
+    // =====================================================================================
+
+
+    //RF11: solo los partidos cerrados cuentan para la tabla
+    public List<Partido> partidosCerrados() {
+        List<Partido> cerrados = new ArrayList<>();
+        for (Partido p : partidos) {
+            if (p.getEstado() == EstadoPartido.CERRADO) {
+                cerrados.add(p);
+            }
+        }
+        return cerrados;
+    }
+
+    //RF11: devuelve el mensaje de error si no se puede consultar la tabla, o null si se puede
+    public String validarConsultaTabla() {
+        if (!estaConfigurado()) {
+            return "Error: primero debe configurar el campeonato.";
+        }
+        return null;
+    }
+
+    //RF11: la tabla no se guarda, se calcula cada vez que se consulta.
+    //Si el campeonato no esta configurado devuelve una lista vacia
+    public List<TablaPosiciones> calcularTabla() {
+        if (validarConsultaTabla() != null) {
+            return new ArrayList<>();
+        }
+
+        //Todos los equipos aparecen, aunque no hayan jugado
+        List<TablaPosiciones> tabla = new ArrayList<>();
+        for (Equipo e : equipos) {
+            tabla.add(new TablaPosiciones(e));
+        }
+
+        //golesDe ya devuelve 3 - 0 cuando el partido se suspendio por falta de jugadores
+        for (Partido p : partidosCerrados()) {
+            int golesLocal = p.golesDe(p.getLocal());
+            int golesVisitante = p.golesDe(p.getVisitante());
+            TablaPosiciones filaLocal = buscarFilaTabla(tabla, p.getLocal());
+            TablaPosiciones filaVisitante = buscarFilaTabla(tabla, p.getVisitante());
+            if (filaLocal != null) {
+                sumarResultado(filaLocal, golesLocal, golesVisitante);
+            }
+            if (filaVisitante != null) {
+                sumarResultado(filaVisitante, golesVisitante, golesLocal);
+            }
+        }
+
+        //Orden de burbuja: se intercambian dos filas vecinas si la de abajo debe ir antes
+        for (int i = 0; i < tabla.size() - 1; i++) {
+            for (int j = 0; j < tabla.size() - 1 - i; j++) {
+                if (filaDebeIrAntes(tabla.get(j + 1), tabla.get(j))) {
+                    TablaPosiciones auxiliar = tabla.get(j);
+                    tabla.set(j, tabla.get(j + 1));
+                    tabla.set(j + 1, auxiliar);
+                }
+            }
+        }
+        return tabla;
+    }
+
+    //RF11: suma los goles de cada jugador en los partidos cerrados
+    public List<TablaGoleadores> calcularGoleadores() {
+        if (validarConsultaTabla() != null) {
+            return new ArrayList<>();
+        }
+
+        List<TablaGoleadores> goleadores = new ArrayList<>();
+        for (Partido p : partidosCerrados()) {
+            //Si el partido se suspendio por falta de jugadores, su marcador no vale (se cuenta 3 - 0),
+            //asi que sus goles tampoco se suman a los goleadores
+            if (p.getEquipoSuspendido() == null) {
+                for (Gol g : p.getGoles()) {
+                    TablaGoleadores fila = buscarFilaGoleador(goleadores, g.getJugador());
+                    if (fila == null) {
+                        goleadores.add(new TablaGoleadores(g.getJugador(), g.getEquipo(), 1));
+                    } else {
+                        fila.setGoles(fila.getGoles() + 1);
+                    }
+                }
+            }
+        }
+
+        //Orden de burbuja: mas goles primero y, si empatan, por apellido
+        for (int i = 0; i < goleadores.size() - 1; i++) {
+            for (int j = 0; j < goleadores.size() - 1 - i; j++) {
+                if (goleadorDebeIrAntes(goleadores.get(j + 1), goleadores.get(j))) {
+                    TablaGoleadores auxiliar = goleadores.get(j);
+                    goleadores.set(j, goleadores.get(j + 1));
+                    goleadores.set(j + 1, auxiliar);
+                }
+            }
+        }
+        return goleadores;
+    }
+
+    //Metodos de apoyo de M4
+
+    private TablaPosiciones buscarFilaTabla(List<TablaPosiciones> tabla, Equipo equipo) {
+        for (TablaPosiciones fila : tabla) {
+            if (fila.getEquipo() == equipo) {
+                return fila;
+            }
+        }
+        return null;
+    }
+
+    private TablaGoleadores buscarFilaGoleador(List<TablaGoleadores> goleadores, Jugador jugador) {
+        for (TablaGoleadores fila : goleadores) {
+            if (fila.getJugador() == jugador) {
+                return fila;
+            }
+        }
+        return null;
+    }
+
+    //Actualiza una fila con el resultado de un partido
+    private void sumarResultado(TablaPosiciones fila, int golesFavor, int golesContra) {
+        fila.setPj(fila.getPj() + 1);
+        fila.setGf(fila.getGf() + golesFavor);
+        fila.setGc(fila.getGc() + golesContra);
+        if (golesFavor > golesContra) {
+            fila.setPg(fila.getPg() + 1);
+        } else if (golesFavor == golesContra) {
+            fila.setPe(fila.getPe() + 1);
+        } else {
+            fila.setPp(fila.getPp() + 1);
+        }
+    }
+
+    //Orden de la tabla: puntos, diferencia de goles, goles a favor y nombre del equipo
+    private boolean filaDebeIrAntes(TablaPosiciones a, TablaPosiciones b) {
+        if (a.puntos() != b.puntos()) {
+            return a.puntos() > b.puntos();
+        }
+        if (a.dg() != b.dg()) {
+            return a.dg() > b.dg();
+        }
+        if (a.getGf() != b.getGf()) {
+            return a.getGf() > b.getGf();
+        }
+        return a.getEquipo().getNombre().compareToIgnoreCase(b.getEquipo().getNombre()) < 0;
+    }
+
+    //Orden de goleadores: goles de mayor a menor y, con igual cantidad, por apellido
+    private boolean goleadorDebeIrAntes(TablaGoleadores a, TablaGoleadores b) {
+        if (a.getGoles() != b.getGoles()) {
+            return a.getGoles() > b.getGoles();
+        }
+        int comparacion = a.getJugador().getApellidos().compareToIgnoreCase(b.getJugador().getApellidos());
+        if (comparacion == 0) {
+            comparacion = a.getJugador().getNombres().compareToIgnoreCase(b.getJugador().getNombres());
+        }
+        return comparacion < 0;
     }
 }

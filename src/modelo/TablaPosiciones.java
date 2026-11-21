@@ -1,5 +1,7 @@
 package modelo;
 
+import negocio.ReglasJuego;
+
 public class TablaPosiciones {
 
     //Atributos
@@ -17,12 +19,16 @@ public class TablaPosiciones {
     }
 
     //Metodos
+
+    //Diferencia de goles
     public int dg() {
-        return 0;
+        return gf - gc;
     }
 
     public int puntos() {
-        return 0;
+        return pg * ReglasJuego.PUNTOS_VICTORIA
+                + pe * ReglasJuego.PUNTOS_EMPATE
+                + pp * ReglasJuego.PUNTOS_DERROTA;
     }
 
     //Getters y Setters
