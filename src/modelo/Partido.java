@@ -39,13 +39,69 @@ public class Partido {
     }
 
     //Metodos
+
+    // ===== M2: RF05 =====
+
+    public String validarAlineacion(Alineacion alineacion) {
+
+        if (alineacion == null) {
+            return "Error: campos obligatorios incompletos.";
+        }
+
+        if (estado != EstadoPartido.PROGRAMADO) {
+            return "Error: el partido no está en estado programado.";
+        }
+
+        Equipo equipo = alineacion.getEquipo();
+
+        if (equipo == null) {
+            return "Error: campos obligatorios incompletos.";
+        }
+
+        if (equipo != local && equipo != visitante) {
+            return "Error: el equipo seleccionado no juega en este partido.";
+        }
+
+        return alineacion.validar();
+    }
+
     public boolean registrarAlineacion(Alineacion alineacion) {
-        return false;
+
+        if (validarAlineacion(alineacion) != null) {
+            return false;
+        }
+
+        Equipo equipo = alineacion.getEquipo();
+        boolean reemplazada;
+
+        if (equipo == local) {
+            reemplazada = alineacionLocal != null;
+            alineacionLocal = alineacion;
+        } else {
+            reemplazada = alineacionVisitante != null;
+            alineacionVisitante = alineacion;
+        }
+
+        return reemplazada;
     }
 
     public Alineacion getAlineacion(Equipo equipo) {
+
+        if (equipo == null) {
+            return null;
+        }
+
+        if (equipo == local) {
+            return alineacionLocal;
+        }
+
+        if (equipo == visitante) {
+            return alineacionVisitante;
+        }
+
         return null;
     }
+
 
     public void abrirRegistro() {
 
