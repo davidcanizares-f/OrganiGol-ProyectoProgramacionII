@@ -1,29 +1,31 @@
 package modelo;
 
+import negocio.ReglasJuego;
+
+/**
+ * Resumen de la Clase pedido a una IA:
+ * Tarjeta roja. Por doble amarilla = 1 fecha; directa = 2 fechas (un solo nivel, sin gravedad).
+ */
 public class TarjetaRoja extends Tarjeta {
 
-    //Atributos
     private boolean porDobleAmarilla;
 
-    //Constructor
-    public TarjetaRoja(Jugador jugador, Partido partido, int minuto, String detalle, boolean porDobleAmarilla) {
+    public TarjetaRoja(Jugador jugador, Partido partido, int minuto,
+                       String detalle, boolean porDobleAmarilla) {
         super(jugador, partido, minuto, detalle);
         this.porDobleAmarilla = porDobleAmarilla;
     }
 
-    //Metodos
     @Override
     public int fechasDeSancion() {
-        return 0;
+        return porDobleAmarilla ? ReglasJuego.FECHAS_DOBLE_AMARILLA : ReglasJuego.FECHAS_ROJA_DIRECTA;
     }
 
     @Override
     public String getTipo() {
-        return null;
+        return "ROJA";
     }
 
-    //Getters y Setters
-    public boolean isPorDobleAmarilla() {
-        return porDobleAmarilla;
-    }
+    public boolean isPorDobleAmarilla() { return porDobleAmarilla; }
+    public void setPorDobleAmarilla(boolean porDobleAmarilla) { this.porDobleAmarilla = porDobleAmarilla; }
 }
