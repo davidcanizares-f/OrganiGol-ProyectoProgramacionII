@@ -9,10 +9,7 @@ import negocio.ActaArchivo;
 import java.util.List;
 import java.util.Scanner;
 
-/*
- * Menu del modulo 4: estadisticas, cierre con acta y tabla (RF09, RF10 y RF11).
- * Uso: new MenuResumenActaTabla().mostrar(campeonato, scanner);
- */
+
 public class MenuResumenActaTabla {
 
     public void mostrar(Campeonato campeonato, Scanner sc) {
