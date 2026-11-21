@@ -88,20 +88,7 @@ public class Partido {
     }
 
     public int golesDe(Equipo equipo) {
-        //Si hubo suspension por falta de jugadores, el marcador es 3 - 0 para el rival
-        if (equipoSuspendido != null) {
-            if (equipo == equipoSuspendido) {
-                return 0;
-            }
-            return ReglasJuego.GOLES_VICTORIA_ADMIN;
-        }
-        int cantidad = 0;
-        for (Gol g : goles) {
-            if (g.getEquipo() == equipo) {
-                cantidad++;
-            }
-        }
-        return cantidad;
+        return 0;
     }
 
     public String getMarcador() {

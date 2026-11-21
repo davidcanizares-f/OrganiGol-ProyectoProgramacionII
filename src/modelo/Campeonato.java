@@ -28,12 +28,11 @@ public class Campeonato {
 
     //M2
     public void configurar(String nombre, Categoria categoria) {
-        this.nombre = nombre;
-        this.categoria = categoria;
+
     }
 
     public boolean estaConfigurado() {
-        return nombre != null && categoria != null;
+        return false;
     }
 
     public void modificar(String nombre, Categoria categoria) {
