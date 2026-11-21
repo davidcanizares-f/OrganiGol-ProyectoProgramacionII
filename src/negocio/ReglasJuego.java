@@ -21,5 +21,7 @@ public class ReglasJuego {
     public static final int PUNTOS_DERROTA = 0;
     public static final int EQUIPOS_MINIMOS = 4;
     public static final int CARNE_MAXIMO = 9999;
+    public static final int OBSERVACIONES_MIN = 5;
+    public static final int OBSERVACIONES_MAX = 100;
 
 }
