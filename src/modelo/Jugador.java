@@ -1,7 +1,5 @@
 package modelo;
 
-import negocio.ReglasJuego;
-
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
@@ -59,74 +57,34 @@ public class Jugador {
         return estado == EstadoJugador.ACTIVO && fechasPendientes() == 0;
     }
 
-    // ===== M5 =====
     public void suspender() {
-        // Un jugador dado de baja no cambia de estado
-        if (estado == EstadoJugador.ACTIVO) {
-            estado = EstadoJugador.SUSPENDIDO;
-        }
+
     }
 
     public void rehabilitar() {
-        if (estado == EstadoJugador.SUSPENDIDO) {
-            estado = EstadoJugador.ACTIVO;
-        }
+
     }
-    // ===== fin M5 =====
 
     public void darDeBaja(String motivo) {
         this.estado = EstadoJugador.DE_BAJA;
         this.motivoBaja = motivo;
     }
 
-    // ===== M5 =====
     public Sancion sumarAmarilla(Partido partido) {
-        amarillasAcumuladas++;
-        if (amarillasAcumuladas >= ReglasJuego.AMARILLAS_PARA_SUSPENDER) {
-            amarillasAcumuladas = 0;
-            return aplicarSancion(partido, Sancion.MOTIVO_ACUMULACION, ReglasJuego.FECHAS_AMARILLAS);
-        }
         return null;
     }
 
-    // Se usa cuando una segunda amarilla se convierte en roja: las amarillas del partido no suman
-    public void restarAmarilla() {
-        if (amarillasAcumuladas > 0) {
-            amarillasAcumuladas--;
-        }
-    }
-
     public Sancion aplicarSancion(Partido partidoOrigen, String motivo, int fechas) {
-        Sancion sancion = new Sancion(this, partidoOrigen, motivo, fechas);
-        sanciones.add(sancion);
-        suspender();
-        return sancion;
+        return null;
     }
 
     public int fechasPendientes() {
-        int total = 0;
-        for (Sancion s : sanciones) {
-            total += s.getFechasPendientes();
-        }
-        return total;
+        return 0;
     }
 
-    // Resta 1 fecha a la primera sanción pendiente que NO nació en este partido.
-    // Devuelve true si el jugador queda sin fechas y vuelve a ACTIVO.
     public boolean descontarFechas(Partido partido) {
-        for (Sancion s : sanciones) {
-            if (s.getPartidoOrigen() != partido && !s.estaCumplida()) {
-                s.descontarFecha();
-                if (fechasPendientes() == 0) {
-                    rehabilitar();
-                    return true;
-                }
-                return false;
-            }
-        }
         return false;
     }
-    // ===== fin M5 =====
 
     //Getters y Setters
     public String getCarne() {

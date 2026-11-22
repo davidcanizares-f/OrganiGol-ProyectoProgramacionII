@@ -3,7 +3,6 @@ package modelo;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import negocio.ReglasJuego;
 import java.time.format.DateTimeFormatter;
@@ -120,8 +119,28 @@ public class Partido {
         return null;
     }
 
+    public Tarjeta registrarTarjeta(Jugador jugador, String tipo, int minuto, String detalle) {
+        return null;
+    }
+
     public boolean estaEnAlineacion(Jugador jugador) {
         return false;
+    }
+
+    public boolean estaExpulsado(Jugador jugador) {
+        return false;
+    }
+
+    public int jugadoresEnCancha(Equipo equipo) {
+        return 0;
+    }
+
+    public boolean verificarMinimo(Equipo equipo) {
+        return false;
+    }
+
+    public void suspenderPorFaltaDeJugadores(Equipo equipo) {
+
     }
 
     public int golesDe(Equipo equipo) {
@@ -133,161 +152,10 @@ public class Partido {
     }
 
 
-    // ===== M5 =====
-    public String validarPartidoEnRegistro() {
-        if (estado != EstadoPartido.EN_REGISTRO) {
-            return "Error: el partido no está en registro.";
-        }
-        return null;
-    }
-
-    public String validarTarjeta(Jugador jugador, String tipo, int minuto, String detalle) {
-        // Obligatorios
-        if (jugador == null) {
-            return "Error: debe seleccionar un jugador.";
-        }
-        if (tipo == null || !(tipo.equalsIgnoreCase("AMARILLA") || tipo.equalsIgnoreCase("ROJA"))) {
-            return "Error: debe seleccionar el tipo de tarjeta (amarilla o roja).";
-        }
-        // Formato
-        if (minuto < ReglasJuego.MINUTO_MINIMO || minuto > ReglasJuego.MINUTO_MAXIMO) {
-            return "Error: el minuto debe estar entre 1 y 80.";
-        }
-        if (detalle != null && !detalle.trim().isEmpty()) {
-            int largo = detalle.trim().length();
-            if (largo < ReglasJuego.OBSERVACIONES_MIN || largo > ReglasJuego.OBSERVACIONES_MAX) {
-                return "Error: el detalle del informe debe tener entre 5 y 100 caracteres.";
-            }
-        }
-        // Reglas de negocio
-        String errorEstado = validarPartidoEnRegistro();
-        if (errorEstado != null) {
-            return errorEstado;
-        }
-        if (!jugadorEnAlineacion(jugador)) {
-            return "Error: el jugador '" + jugador.getNombres() + " " + jugador.getApellidos()
-                    + "' no está en la alineación de este partido.";
-        }
-        if (estaExpulsado(jugador)) {
-            return "Error: el jugador ya fue expulsado en este partido.";
-        }
-        return null;
-    }
-
-    // Si la validación falla no cambia nada y devuelve null.
-    // Si es la segunda amarilla, devuelve la roja por doble amarilla.
-    public Tarjeta registrarTarjeta(Jugador jugador, String tipo, int minuto, String detalle) {
-        if (validarTarjeta(jugador, tipo, minuto, detalle) != null) {
-            return null;
-        }
-        String texto = (detalle == null || detalle.trim().isEmpty()) ? null : detalle.trim();
-        Equipo equipo = jugador.getEquipo();
-
-        if (tipo.equalsIgnoreCase("AMARILLA")) {
-            if (contarAmarillas(jugador) == 1) {
-                // Segunda amarilla: se guarda y se convierte en roja; las 2 no suman al acumulado
-                tarjetas.add(new TarjetaAmarilla(jugador, this, minuto, texto, true));
-                jugador.restarAmarilla();
-                Tarjeta roja = new TarjetaRoja(jugador, this, minuto, texto, true);
-                tarjetas.add(roja);
-                jugador.aplicarSancion(this, Sancion.MOTIVO_DOBLE_AMARILLA, roja.fechasDeSancion());
-                verificarMinimo(equipo);
-                return roja;
-            }
-            Tarjeta amarilla = new TarjetaAmarilla(jugador, this, minuto, texto, false);
-            tarjetas.add(amarilla);
-            jugador.sumarAmarilla(this);
-            return amarilla;
-        }
-
-        Tarjeta roja = new TarjetaRoja(jugador, this, minuto, texto, false);
-        tarjetas.add(roja);
-        jugador.aplicarSancion(this, Sancion.MOTIVO_ROJA_DIRECTA, roja.fechasDeSancion());
-        verificarMinimo(equipo);
-        return roja;
-    }
-
-    private boolean jugadorEnAlineacion(Jugador jugador) {
-        Alineacion alineacion = getAlineacion(jugador.getEquipo());
-        return alineacion != null && alineacion.contiene(jugador);
-    }
-
-    private int contarAmarillas(Jugador jugador) {
-        int total = 0;
-        for (Tarjeta t : tarjetas) {
-            if (t instanceof TarjetaAmarilla && t.getJugador() == jugador) {
-                total++;
-            }
-        }
-        return total;
-    }
-
-    public boolean estaExpulsado(Jugador jugador) {
-        for (Tarjeta t : tarjetas) {
-            if (t instanceof TarjetaRoja && t.getJugador() == jugador) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // Titulares del equipo menos los expulsados (los cambios no modifican el conteo)
-    public int jugadoresEnCancha(Equipo equipo) {
-        Alineacion alineacion = getAlineacion(equipo);
-        if (alineacion == null) {
-            return 0;
-        }
-        int total = alineacion.getTitulares().size();
-        for (Tarjeta t : tarjetas) {
-            if (t instanceof TarjetaRoja && t.getJugador().getEquipo() == equipo) {
-                total--;
-            }
-        }
-        return total;
-    }
-
-    public boolean verificarMinimo(Equipo equipo) {
-        if (jugadoresEnCancha(equipo) < ReglasJuego.MINIMO_EN_CANCHA) {
-            suspenderPorFaltaDeJugadores(equipo);
-            return true;
-        }
-        return false;
-    }
-
-    public void suspenderPorFaltaDeJugadores(Equipo equipo) {
-        this.estado = EstadoPartido.SUSPENDIDO;
-        this.equipoSuspendido = equipo;
-    }
-
-    // Filtros opcionales (null = sin filtro). Nunca devuelve null; ordena por minuto.
     public List<Tarjeta> filtrarTarjetas(Equipo equipo, Jugador jugador, String tipo) {
-        List<Tarjeta> resultado = new ArrayList<>();
-        for (Tarjeta t : tarjetas) {
-            if (equipo != null && t.getJugador().getEquipo() != equipo) {
-                continue;
-            }
-            if (jugador != null && t.getJugador() != jugador) {
-                continue;
-            }
-            if (tipo != null && !t.getTipo().equalsIgnoreCase(tipo)) {
-                continue;
-            }
-            resultado.add(t);
-        }
-        resultado.sort(Comparator.comparingInt(Tarjeta::getMinuto));
-        return resultado;
-    }
-
-    public String validarConsultaEnCancha(Equipo equipo) {
-        if (estado == EstadoPartido.PROGRAMADO) {
-            return "Error: el partido todavía no tiene el registro abierto.";
-        }
-        if (equipo != null && equipo != local && equipo != visitante) {
-            return "Error: el equipo seleccionado no juega en este partido.";
-        }
         return null;
     }
-    // ===== fin M5 =====
+
 
     //Getters y Setters
     public Equipo getLocal() {
