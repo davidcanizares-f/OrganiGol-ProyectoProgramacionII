@@ -12,13 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-/**
- * Menú del módulo 1: gestión de jugadores (RF02).
- * Uso: new MenuJugadores().mostrar(campeonato, scanner);
- *
- * Toda la validación vive en el modelo (Campeonato, Jugador, Validador):
- * este menú solo pide datos, llama al modelo y muestra el texto que devuelve.
- */
+// Menú del módulo 1: gestión de jugadores (RF02).
+
 public class MenuJugadores {
 
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/uuuu");

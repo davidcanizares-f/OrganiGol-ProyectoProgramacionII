@@ -68,7 +68,7 @@ public class MenuPrincipal {
                 + campeonato.getPartidos().size() + " partido(s).";
     }
 
-    // Número entero, o -1 si el texto está vacío o no es un número
+    // Número entero, o -1 si el texto está vacio o no es un número
     private int numero(String texto) {
         return Validador.aEntero(texto);
     }
