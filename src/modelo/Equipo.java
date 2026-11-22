@@ -32,20 +32,35 @@ public class Equipo {
     }
 
     public boolean tieneCupo() {
-        return jugadores.size() < ReglasJuego.PLANTEL_MAXIMO;
+        return cantidadJugadores() < ReglasJuego.PLANTEL_MAXIMO;
     }
 
     public boolean camisetaDisponible(int numero) {
+        return camisetaDisponible(numero, null);
+    }
+
+    // AÑADIR METODO AL UML
+    // excepto: jugador que se esta modificando (para que no choque consigo mismo)
+    public boolean camisetaDisponible(int numero, Jugador excepto) {
         for(Jugador j : jugadores){
-            if(j.getNumeroCamiseta() == numero){
+            if(j != excepto
+                    && j.getEstado() != EstadoJugador.DE_BAJA
+                    && j.getNumeroCamiseta() == numero){
                 return false;
             }
         }
         return true;
     }
 
+    // Los jugadores dados de baja no ocupan cupo
     public int cantidadJugadores() {
-        return jugadores.size();
+        int cantidad = 0;
+        for(Jugador j : jugadores){
+            if(j.getEstado() != EstadoJugador.DE_BAJA){
+                cantidad++;
+            }
+        }
+        return cantidad;
     }
 
     public Jugador buscarJugador(String carne) {
