@@ -496,10 +496,25 @@ public class Campeonato {
         return resultado;
     }
 
-    // OTRO MODULO
+    // ===== M5 =====
+    // equipo == null significa todos los equipos
     public List<Sancion> sancionesVigentes(Equipo equipo) {
-        return null;
+        List<Sancion> resultado = new ArrayList<>();
+        for (Equipo e : equipos) {
+            if (equipo != null && e != equipo) {
+                continue;
+            }
+            for (Jugador j : e.getJugadores()) {
+                for (Sancion s : j.getSanciones()) {
+                    if (!s.estaCumplida()) {
+                        resultado.add(s);
+                    }
+                }
+            }
+        }
+        return resultado;
     }
+    // ===== fin M5 =====
 
     // Getters y Setters
     public String getNombre() {
