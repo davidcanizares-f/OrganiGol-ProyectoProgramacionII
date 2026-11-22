@@ -1,4 +1,3 @@
-
 package modelo;
 
 import negocio.ReglasJuego;
@@ -32,18 +31,33 @@ public class Campeonato {
     // MODULO 2
     // ======================================================================================
 
-    // RF03: valida los datos para configurar el campeonato
-    public String validarConfiguracion(String nombre, Categoria categoria) {
-        if (nombre == null || nombre.trim().isEmpty()) {
-            return "Error: el nombre del campeonato es obligatorio.";
+    // RF03: valida el nombre y la categoría (comunes a registrar y modificar)
+    private String validarDatosCampeonato(String nombre, Categoria categoria) {
+        if (!Validador.obligatorio(nombre)) {
+            return "Error: campos obligatorios incompletos.";
+        }
+
+        if (!Validador.longitud(nombre, 3, 50)) {
+            return "Error: el nombre del campeonato debe tener entre 3 y 50 caracteres.";
         }
 
         if (categoria == null) {
-            return "Error: debe seleccionar una categoría.";
+            return "Error: debe seleccionar una categoría válida.";
+        }
+
+        return null;
+    }
+
+    // RF03: valida los datos para configurar el campeonato
+    public String validarConfiguracion(String nombre, Categoria categoria) {
+        String error = validarDatosCampeonato(nombre, categoria);
+
+        if (error != null) {
+            return error;
         }
 
         if (estaConfigurado()) {
-            return "Error: el campeonato ya está configurado.";
+            return "Error: el campeonato ya fue configurado. Use la opción Modificar.";
         }
 
         return null;
@@ -72,16 +86,14 @@ public class Campeonato {
             return "Error: primero debe configurar el campeonato.";
         }
 
-        if (nombre == null || nombre.trim().isEmpty()) {
-            return "Error: el nombre del campeonato es obligatorio.";
-        }
+        String error = validarDatosCampeonato(nombre, categoria);
 
-        if (categoria == null) {
-            return "Error: debe seleccionar una categoría.";
+        if (error != null) {
+            return error;
         }
 
         if (this.categoria != categoria && !equipos.isEmpty()) {
-            return "Error: no se puede cambiar la categoría porque ya existen equipos inscritos.";
+            return "Error: la categoría no se puede cambiar porque ya hay equipos inscritos.";
         }
 
         return null;
@@ -97,9 +109,31 @@ public class Campeonato {
         this.categoria = categoria;
     }
 
+    // RF03: cuántos equipos faltan para llegar al mínimo de 4
+    public int equiposFaltantes() {
+        int faltantes = ReglasJuego.EQUIPOS_MINIMOS - equipos.size();
+
+        return Math.max(faltantes, 0);
+    }
+
     // RF03: comprueba si el campeonato está listo para crear partidos
     public boolean estaListo() {
         return estaConfigurado() && equiposFaltantes() == 0;
+    }
+
+    // RF04: error si todavía no se pueden crear partidos, o null si ya se puede
+    // AÑADIR AL UML (nuevo)
+    public String validarListoParaPartidos() {
+        if (!estaConfigurado()) {
+            return "Error: primero debe configurar el campeonato.";
+        }
+
+        if (!estaListo()) {
+            return "Error: el campeonato necesita al menos " + ReglasJuego.EQUIPOS_MINIMOS
+                    + " equipos para crear partidos (faltan " + equiposFaltantes() + ").";
+        }
+
+        return null;
     }
 
     // RF04: agrega un partido a la lista del campeonato
@@ -117,17 +151,15 @@ public class Campeonato {
             LocalTime hora,
             String cancha) {
 
-        if (!estaConfigurado()) {
-            return "Error: primero debe configurar el campeonato.";
-        }
+        String error = validarListoParaPartidos();
 
-        if (!estaListo()) {
-            return "Error: el campeonato necesita al menos 4 equipos para crear partidos.";
+        if (error != null) {
+            return error;
         }
 
         if (local == null || visitante == null || fecha == null
-                || hora == null || cancha == null || cancha.trim().isEmpty()) {
-            return "Error: todos los campos del partido son obligatorios.";
+                || hora == null || !Validador.obligatorio(cancha)) {
+            return "Error: campos obligatorios incompletos.";
         }
 
         if (local == visitante) {
@@ -138,8 +170,13 @@ public class Campeonato {
             return "Error: ambos equipos deben estar inscritos en el campeonato.";
         }
 
+        if (!Validador.longitud(cancha, 3, 40)) {
+            return "Error: el nombre de la cancha debe tener entre 3 y 40 caracteres.";
+        }
+
         if (existeCruce(local, visitante)) {
-            return "Error: estos equipos ya tienen un partido programado.";
+            return "Error: el cruce entre '" + local.getNombre() + "' y '"
+                    + visitante.getNombre() + "' ya está programado en este campeonato.";
         }
 
         return null;
@@ -227,16 +264,6 @@ public class Campeonato {
     // ======================================================================================
     // MODULO 1
     // ======================================================================================
-
-    public int equiposFaltantes() {
-        int equipos_faltantes = 0;
-
-        if (equipos.size() < 4) {
-            equipos_faltantes = 4 - equipos.size();
-        }
-
-        return equipos_faltantes;
-    }
 
     // AÑADIR METODO AL UML
     public String validarEquipo(
