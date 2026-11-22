@@ -1,5 +1,7 @@
 package modelo;
 
+import negocio.Validador;
+
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
@@ -65,9 +67,30 @@ public class Jugador {
 
     }
 
+    // AÑADIR METODO AL UML
+    public String validarBaja(String motivo) {
+        if (!Validador.longitud(motivo, 5, 100)) {
+            return "Error: el motivo de la baja es obligatorio y debe tener entre 5 y 100 caracteres.";
+        }
+
+        if (estado == EstadoJugador.DE_BAJA) {
+            return "Error: el jugador ya se encuentra dado de baja.";
+        }
+
+        if (estado == EstadoJugador.SUSPENDIDO) {
+            return "Error: el jugador está suspendido y no puede darse de baja hasta cumplir su sanción.";
+        }
+
+        return null;
+    }
+
     public void darDeBaja(String motivo) {
+        if (validarBaja(motivo) != null) {
+            return;
+        }
+
         this.estado = EstadoJugador.DE_BAJA;
-        this.motivoBaja = motivo;
+        this.motivoBaja = motivo.trim();
     }
 
     public Sancion sumarAmarilla(Partido partido) {

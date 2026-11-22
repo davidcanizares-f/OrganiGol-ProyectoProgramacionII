@@ -2,6 +2,7 @@
 package modelo;
 
 import negocio.ReglasJuego;
+import negocio.Validador;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -245,8 +246,42 @@ public class Campeonato {
             String delegado,
             String telefono) {
 
-        // Nombre no repetido en el campeonato
-        if (buscarEquipo(nombre) != null) {
+        if (!estaConfigurado()) {
+            return "Error: primero debe configurar el campeonato.";
+        }
+
+        // Obligatorios
+        if (!Validador.obligatorio(nombre)
+                || !Validador.obligatorio(barrio)
+                || !Validador.obligatorio(delegado)
+                || !Validador.obligatorio(telefono)) {
+            return "Error: campos obligatorios incompletos.";
+        }
+
+        // Formato
+        if (!Validador.longitud(nombre, 3, 40)) {
+            return "Error: el nombre del equipo debe tener entre 3 y 40 caracteres.";
+        }
+
+        if (!Validador.longitud(barrio, 1, 40)) {
+            return "Error: el barrio no puede superar los 40 caracteres.";
+        }
+
+        if (!Validador.soloLetras(delegado.trim())) {
+            return "Error: el nombre del delegado solo puede contener letras y espacios.";
+        }
+
+        if (!Validador.longitud(delegado, 3, 60)) {
+            return "Error: el nombre del delegado debe tener entre 3 y 60 caracteres.";
+        }
+
+        if (!Validador.soloDigitos(telefono.trim(), 10)) {
+            return "Error: el teléfono debe tener 10 dígitos numéricos.";
+        }
+
+        // Nombre no repetido en el campeonato (el propio equipo no cuenta, sirve al modificar)
+        Equipo existente = buscarEquipo(nombre);
+        if (existente != null && existente != equipo) {
             return "Error: ya existe un equipo con ese nombre en el campeonato.";
         }
 
@@ -276,12 +311,21 @@ public class Campeonato {
             String delegado,
             String telefono) {
 
-        equipo.modificar(nombre, barrio, delegado, telefono);
+        if (equipo == null
+                || validarEquipo(equipo, nombre, barrio, delegado, telefono) != null) {
+            return;
+        }
+
+        equipo.modificar(nombre.trim(), barrio.trim(), delegado.trim(), telefono.trim());
     }
 
     public Equipo buscarEquipo(String nombre) {
+        if (nombre == null) {
+            return null;
+        }
+
         for (Equipo e : equipos) {
-            if (e.getNombre().equalsIgnoreCase(nombre)) {
+            if (e.getNombre().equalsIgnoreCase(nombre.trim())) {
                 return e;
             }
         }
@@ -291,7 +335,7 @@ public class Campeonato {
 
     // Buscar coincidencias en el nombre
     public List<Equipo> buscarEquipos(String texto) {
-        texto = texto.toLowerCase();
+        texto = (texto == null) ? "" : texto.trim().toLowerCase();
 
         List<Equipo> resultado = new ArrayList<>();
 
@@ -306,8 +350,12 @@ public class Campeonato {
 
     // AGREGAR METODO AL UML
     public String validarEliminarEquipo(Equipo equipo) {
+        if (equipo == null) {
+            return "Error: debe seleccionar un equipo.";
+        }
+
         if (equipoTienePartidos(equipo)) {
-            return "No se ha podido eliminar. El equipo aun tiene partidos pendientes";
+            return "Error: el equipo tiene partidos y no puede eliminarse.";
         }
 
         return null;
@@ -347,20 +395,31 @@ public class Campeonato {
             LocalDate fechaNacimiento,
             int numeroCamiseta) {
 
-        // Cedulas no repetidas
-        for (Equipo e : equipos) {
-            for (Jugador j : e.getJugadores()) {
-                if (j.getCedula().equals(cedula)) {
-                    return "Error. La cedula esta repetida.";
-                }
-            }
+        if (!estaConfigurado()) {
+            return "Error: primero debe configurar el campeonato.";
+        }
+
+        if (equipo == null) {
+            return "Error: campos obligatorios incompletos.";
+        }
+
+        // Obligatorios y formato
+        String error = validarDatosJugador(nombres, apellidos, cedula, fechaNacimiento, numeroCamiseta);
+        if (error != null) {
+            return error;
         }
 
         // La edad corresponde a la categoria del campeonato
         int edad = Period.between(fechaNacimiento, LocalDate.now()).getYears();
 
         if (!categoria.admiteEdad(edad)) {
-            return "Error. La edad de " + edad + " años no pertenece a la categoria.";
+            return "Error: la edad del jugador (" + edad + " años) no corresponde a la categoría "
+                    + categoria + " del campeonato.";
+        }
+
+        // Cedulas no repetidas
+        if (cedulaRepetida(cedula.trim(), null)) {
+            return "Error: la cédula ya está inscrita en otro equipo del campeonato.";
         }
 
         // Reglas del equipo
@@ -369,16 +428,72 @@ public class Campeonato {
         }
 
         if (!equipo.tieneCupo()) {
-            return "Error: el plantel del equipo ya tiene el máximo de 25 jugadores.";
+            return "Error: el plantel del equipo ya tiene el máximo de " + ReglasJuego.PLANTEL_MAXIMO + " jugadores.";
         }
 
         // Carné disponible
         if (ultimoCarne >= ReglasJuego.CARNE_MAXIMO) {
-            return "Error: se alcanzó el límite máximo de 9999 carnés.";
+            return "Error: se alcanzó el límite máximo de " + ReglasJuego.CARNE_MAXIMO + " carnés.";
         }
 
         // Si todo esta bien
         return null;
+    }
+
+    // AÑADIR METODO AL UML (apoyo privado)
+    // Valida obligatorios y formato de los datos de un jugador
+    private String validarDatosJugador(
+            String nombres,
+            String apellidos,
+            String cedula,
+            LocalDate fechaNacimiento,
+            int numeroCamiseta) {
+
+        if (!Validador.obligatorio(nombres)
+                || !Validador.obligatorio(apellidos)
+                || !Validador.obligatorio(cedula)
+                || fechaNacimiento == null) {
+            return "Error: campos obligatorios incompletos.";
+        }
+
+        if (!Validador.soloLetras(nombres.trim()) || !Validador.soloLetras(apellidos.trim())) {
+            return "Error: los nombres y apellidos solo pueden contener letras y espacios.";
+        }
+
+        if (!Validador.longitud(nombres, 2, 40) || !Validador.longitud(apellidos, 2, 40)) {
+            return "Error: los nombres y apellidos deben tener entre 2 y 40 caracteres.";
+        }
+
+        if (!Validador.soloDigitos(cedula.trim(), 10)) {
+            return "Error: la cédula debe tener 10 dígitos numéricos.";
+        }
+
+        if (!Validador.cedulaValida(cedula.trim())) {
+            return "Error: la cédula ingresada no es válida.";
+        }
+
+        if (fechaNacimiento.isAfter(LocalDate.now())) {
+            return "Error: la fecha de nacimiento no puede ser posterior a la fecha actual.";
+        }
+
+        if (!Validador.rango(numeroCamiseta, 1, 99)) {
+            return "Error: el número de camiseta debe estar entre 1 y 99.";
+        }
+
+        return null;
+    }
+
+    // excepto: el jugador que se modifica (null al inscribir)
+    private boolean cedulaRepetida(String cedula, Jugador excepto) {
+        for (Equipo e : equipos) {
+            for (Jugador j : e.getJugadores()) {
+                if (j != excepto && j.getCedula().equals(cedula)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public Jugador inscribirJugador(
@@ -401,9 +516,9 @@ public class Campeonato {
 
             Jugador jugador = new Jugador(
                     carne,
-                    nombres,
-                    apellidos,
-                    cedula,
+                    nombres.trim(),
+                    apellidos.trim(),
+                    cedula.trim(),
                     fechaNacimiento,
                     numeroCamiseta,
                     equipo
@@ -417,6 +532,46 @@ public class Campeonato {
         return null;
     }
 
+    // AÑADIR METODO AL UML
+    public String validarModificacionJugador(
+            Jugador jugador,
+            String nombres,
+            String apellidos,
+            String cedula,
+            LocalDate fechaNacimiento,
+            int numeroCamiseta) {
+
+        if (jugador == null) {
+            return "Error: debe seleccionar un jugador.";
+        }
+
+        if (jugador.getEstado() == EstadoJugador.DE_BAJA) {
+            return "Error: el jugador está dado de baja y no puede modificarse.";
+        }
+
+        String error = validarDatosJugador(nombres, apellidos, cedula, fechaNacimiento, numeroCamiseta);
+        if (error != null) {
+            return error;
+        }
+
+        int edad = Period.between(fechaNacimiento, LocalDate.now()).getYears();
+
+        if (!categoria.admiteEdad(edad)) {
+            return "Error: la edad del jugador (" + edad + " años) no corresponde a la categoría "
+                    + categoria + " del campeonato.";
+        }
+
+        if (cedulaRepetida(cedula.trim(), jugador)) {
+            return "Error: la cédula ya está inscrita en otro equipo del campeonato.";
+        }
+
+        if (!jugador.getEquipo().camisetaDisponible(numeroCamiseta, jugador)) {
+            return "Error: el número de camiseta ya está en uso en este equipo.";
+        }
+
+        return null;
+    }
+
     public void modificarJugador(
             Jugador jugador,
             String nombres,
@@ -425,9 +580,19 @@ public class Campeonato {
             LocalDate fechaNacimiento,
             int numeroCamiseta) {
 
-        jugador.setNombres(nombres);
-        jugador.setApellidos(apellidos);
-        jugador.setCedula(cedula);
+        if (validarModificacionJugador(
+                jugador,
+                nombres,
+                apellidos,
+                cedula,
+                fechaNacimiento,
+                numeroCamiseta) != null) {
+            return;
+        }
+
+        jugador.setNombres(nombres.trim());
+        jugador.setApellidos(apellidos.trim());
+        jugador.setCedula(cedula.trim());
         jugador.setFechaNacimiento(fechaNacimiento);
         jugador.setNumeroCamiseta(numeroCamiseta);
     }
@@ -435,7 +600,7 @@ public class Campeonato {
     // Buscar jugador por nombre o apellido
     // VERIFICAR EN EL UML
     public List<Jugador> buscarJugador(String texto) {
-        texto = texto.toLowerCase();
+        texto = (texto == null) ? "" : texto.trim().toLowerCase();
 
         List<Jugador> resultado = new ArrayList<>();
 
@@ -455,6 +620,8 @@ public class Campeonato {
     // Buscar jugadores por cedula
     // AÑADIR EN EL UML
     public List<Jugador> buscarJugadoresCedula(String texto) {
+        texto = (texto == null) ? "" : texto.trim();
+
         List<Jugador> resultado = new ArrayList<>();
 
         for (Equipo e : equipos) {
