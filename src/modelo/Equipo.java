@@ -81,9 +81,20 @@ public class Equipo {
 
     //OTRO MODULO
 
+    // ===== M5 =====
+    // Devuelve a cuántos jugadores se les descontó una fecha
     public int descontarFechas(Partido partido) {
-        return 0;
+        int descontados = 0;
+        for (Jugador j : jugadores) {
+            int antes = j.fechasPendientes();
+            j.descontarFechas(partido);
+            if (j.fechasPendientes() < antes) {
+                descontados++;
+            }
+        }
+        return descontados;
     }
+    // ===== fin M5 =====
 
     //Getters y Setters
     public String getNombre() {

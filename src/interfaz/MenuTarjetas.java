@@ -1,4 +1,4 @@
-package negocio;
+package interfaz;
 
 import modelo.Alineacion;
 import modelo.Campeonato;
@@ -18,19 +18,16 @@ import java.util.Scanner;
 
 /**
  * Menú del módulo 5: tarjetas y sanciones (RF12, RF13 y RF14).
- * Uso: new MenuTarjetas(campeonato, scanner).mostrar();
+ * Uso: new MenuTarjetas().mostrar(campeonato, scanner);
  */
 public class MenuTarjetas {
 
-    private final Campeonato campeonato;
-    private final Scanner scanner;
+    private Campeonato campeonato;
+    private Scanner scanner;
 
-    public MenuTarjetas(Campeonato campeonato, Scanner scanner) {
+    public void mostrar(Campeonato campeonato, Scanner scanner) {
         this.campeonato = campeonato;
         this.scanner = scanner;
-    }
-
-    public void mostrar() {
         int opcion;
         do {
             System.out.println();
@@ -41,17 +38,13 @@ public class MenuTarjetas {
             System.out.println("4. Consultar sanciones vigentes");
             System.out.println("0. Volver");
             opcion = leerEntero("Opción: ");
-            try {
-                switch (opcion) {
-                    case 1: registrarTarjeta(); break;
-                    case 2: consultarTarjetas(); break;
-                    case 3: consultarEnCancha(); break;
-                    case 4: consultarSanciones(); break;
-                    case 0: break;
-                    default: System.out.println("Opción no válida.");
-                }
-            } catch (IllegalArgumentException | IllegalStateException e) {
-                System.out.println(e.getMessage());
+            switch (opcion) {
+                case 1: registrarTarjeta(); break;
+                case 2: consultarTarjetas(); break;
+                case 3: consultarEnCancha(); break;
+                case 4: consultarSanciones(); break;
+                case 0: break;
+                default: System.out.println("Opción no válida.");
             }
         } while (opcion != 0);
     }
@@ -60,8 +53,9 @@ public class MenuTarjetas {
     private void registrarTarjeta() {
         Partido partido = seleccionarPartido();
         if (partido == null) return;
-        if (partido.getEstado() != EstadoPartido.EN_REGISTRO) {
-            System.out.println("Error: el partido no está en registro.");
+        String errorEstado = partido.validarPartidoEnRegistro();
+        if (errorEstado != null) {
+            System.out.println(errorEstado);
             return;
         }
         Jugador jugador = seleccionarJugador(partido, null, false);
@@ -86,10 +80,15 @@ public class MenuTarjetas {
         String detalle = leerTexto("Detalle del informe (opcional, 5 a 100 caracteres): ");
 
         // Estado antes de registrar, para saber qué mensajes mostrar
-        int sancionesAntes = jugador.getSanciones().size();
+        Sancion ultimaAntes = ultimaSancion(jugador);
         int pendientesAntes = jugador.fechasPendientes();
         boolean estabaSuspendidoElPartido = partido.getEstado() == EstadoPartido.SUSPENDIDO;
 
+        String error = partido.validarTarjeta(jugador, tipo, minuto, detalle);
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
         Tarjeta tarjeta = partido.registrarTarjeta(jugador, tipo, minuto, detalle);
         String nombre = nombreCompleto(jugador);
 
@@ -105,7 +104,7 @@ public class MenuTarjetas {
             }
         } else {
             System.out.println("Tarjeta amarilla registrada para " + nombre + " en el minuto " + minuto + ".");
-            if (jugador.getSanciones().size() > sancionesAntes) {
+            if (ultimaSancion(jugador) != ultimaAntes) {
                 System.out.println("El jugador " + nombre
                         + " alcanzó 5 amarillas: se aplicará una suspensión y el contador se reinicia.");
             } else {
@@ -115,8 +114,8 @@ public class MenuTarjetas {
         }
 
         // --- RF14: mensajes de la sanción generada ---
-        if (jugador.getSanciones().size() > sancionesAntes) {
-            Sancion nueva = jugador.getSanciones().get(jugador.getSanciones().size() - 1);
+        Sancion nueva = ultimaSancion(jugador);
+        if (nueva != ultimaAntes) {
             String causa;
             if (Sancion.MOTIVO_ACUMULACION.equals(nueva.getMotivo())) {
                 causa = "por acumulación de " + ReglasJuego.AMARILLAS_PARA_SUSPENDER + " tarjetas amarillas";
@@ -183,11 +182,12 @@ public class MenuTarjetas {
     private void consultarEnCancha() {
         Partido partido = seleccionarPartido();
         if (partido == null) return;
-        if (partido.getEstado() == EstadoPartido.PROGRAMADO) {
-            System.out.println("Error: el partido todavía no tiene el registro abierto.");
+        Equipo equipo = seleccionarEquipoDelPartido(partido, "Equipo a consultar");
+        String error = partido.validarConsultaEnCancha(equipo);
+        if (error != null) {
+            System.out.println(error);
             return;
         }
-        Equipo equipo = seleccionarEquipoDelPartido(partido, "Equipo a consultar");
         List<Equipo> equipos = new ArrayList<>();
         if (equipo == null) {
             equipos.add(partido.getLocal());
@@ -297,6 +297,11 @@ public class MenuTarjetas {
     }
 
     // ------------------------------------------------------------------ utilidades
+    private Sancion ultimaSancion(Jugador j) {
+        List<Sancion> lista = j.getSanciones();
+        return lista.isEmpty() ? null : lista.get(lista.size() - 1);
+    }
+
     private String nombreCompleto(Jugador j) {
         return j.getNombres() + " " + j.getApellidos();
     }
