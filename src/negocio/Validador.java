@@ -1,3 +1,4 @@
+
 package negocio;
 
 import java.time.LocalDate;
@@ -7,87 +8,124 @@ import java.time.format.ResolverStyle;
 
 public class Validador {
 
-    public static void obligatorio(String texto, String campo) {
-        if (texto == null || texto.trim().isEmpty()){
-            throw new IllegalArgumentException(
-                    "El campo " + campo+ " es obligatorio." );
-        }
+    // Comprueba que el texto no esté vacío
+    public static boolean obligatorio(String texto) {
+        return texto != null && !texto.trim().isEmpty();
     }
 
-    public static void longitud(String texto, int min, int max, String campo) {
-        obligatorio(texto, campo);
-
-        if (texto.length() < min || texto.length() > max) {
-            throw new IllegalArgumentException(
-                    "El campo " + campo + " debe tener entre " + min + " y " + max + " caracteres.");
-        }
+    // Comprueba la longitud de un texto
+    public static boolean longitud(String texto, int min, int max) {
+        return obligatorio(texto)
+                && texto.trim().length() >= min
+                && texto.trim().length() <= max;
     }
 
-    public static void soloLetras(String texto, String campo) {
-        obligatorio(texto, campo);
-
-        if (!texto.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ ]+")) {
-            throw new IllegalArgumentException(
-                    "El campo " + campo + " solo debe contener letras.");
-        }
-    }
-
-    public static void soloDigitos(String texto, int cantidad, String campo) {
-        obligatorio(texto, campo);
-
-        if (!texto.matches("[0-9]+") || texto.length() != cantidad) {
-            throw new IllegalArgumentException(
-                    "El campo " + campo + " debe contener exactamente "
-                            + cantidad + " dígitos.");
-        }
-    }
-
-    public static void rango(int valor, int min, int max, String campo) {
-        if (valor < min || valor > max) {
-            throw new IllegalArgumentException(
-                    "El campo " + campo + " debe estar entre "
-                            + min + " y " + max + ".");
-        }
-    }
-
-    public static boolean cedulaValida(String cedula) {
-        if (cedula == null || !cedula.matches("[0-9]{10}")) {
+    // Comprueba que contenga solamente letras y espacios
+    public static boolean soloLetras(String texto) {
+        if (!obligatorio(texto)) {
             return false;
         }
 
-        for (int i = 1; i < cedula.length(); i++) {
+        int i = 0;
+
+        while (i < texto.length()) {
+            char letra = texto.charAt(i);
+
+            if (!Character.isLetter(letra) && letra != ' ') {
+                return false;
+            }
+
+            i++;
+        }
+
+        return true;
+    }
+
+    // Comprueba que contenga exactamente cierta cantidad de dígitos
+    public static boolean soloDigitos(String texto, int cantidad) {
+        if (!obligatorio(texto) || texto.length() != cantidad) {
+            return false;
+        }
+
+        int i = 0;
+
+        while (i < texto.length()) {
+            char digito = texto.charAt(i);
+
+            if (digito < '0' || digito > '9') {
+                return false;
+            }
+
+            i++;
+        }
+
+        return true;
+    }
+
+    // Comprueba que un número esté dentro de un rango
+    public static boolean rango(int valor, int min, int max) {
+        return valor >= min && valor <= max;
+    }
+
+    // Comprueba el formato básico de una cédula
+    public static boolean cedulaValida(String cedula) {
+        if (!soloDigitos(cedula, 10)) {
+            return false;
+        }
+
+        int i = 1;
+
+        while (i < cedula.length()) {
             if (cedula.charAt(i) != cedula.charAt(0)) {
                 return true;
             }
+
+            i++;
         }
+
         return false;
     }
 
-    public static void minutoValido(int minuto) {
-        if (minuto < 1 || minuto > 80) {
-            throw new IllegalArgumentException(
-                    "El minuto debe estar entre 1 y 80.");
+    // Comprueba que el minuto esté entre 1 y 80
+    public static boolean minutoValido(int minuto) {
+        return minuto >= 1 && minuto <= 80;
+    }
+
+    // Comprueba una fecha con formato dd/MM/uuuu
+    public static boolean fechaValida(String texto) {
+        if (!obligatorio(texto)) {
+            return false;
+        }
+
+        try {
+            DateTimeFormatter formato = DateTimeFormatter
+                    .ofPattern("dd/MM/uuuu")
+                    .withResolverStyle(ResolverStyle.STRICT);
+
+            LocalDate.parse(texto, formato);
+            return true;
+
+        } catch (Exception e) {
+            return false;
         }
     }
 
-    public static LocalDate fechaValida(String texto) {
-        obligatorio(texto, "fecha");
+    // Comprueba una hora con formato HH:mm
+    public static boolean horaValida(String texto) {
+        if (!obligatorio(texto)) {
+            return false;
+        }
 
+        try {
+            DateTimeFormatter formato = DateTimeFormatter
+                    .ofPattern("HH:mm")
+                    .withResolverStyle(ResolverStyle.STRICT);
 
-        DateTimeFormatter formato = DateTimeFormatter
-                .ofPattern("dd/MM/uuuu")
-                .withResolverStyle(ResolverStyle.STRICT);
+            LocalTime.parse(texto, formato);
+            return true;
 
-        return LocalDate.parse(texto, formato);
-    }
-
-    public static LocalTime horaValida(String texto) {
-        obligatorio(texto, "hora");
-
-        DateTimeFormatter formato = DateTimeFormatter
-                .ofPattern("HH:mm")
-                .withResolverStyle(ResolverStyle.STRICT);
-
-        return LocalTime.parse(texto, formato);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

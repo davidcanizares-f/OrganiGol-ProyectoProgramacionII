@@ -26,4 +26,8 @@ public class TablaGoleadores {
     public int getGoles() {
         return goles;
     }
+
+    public void setGoles(int goles) {
+        this.goles = goles;
+    }
 }
