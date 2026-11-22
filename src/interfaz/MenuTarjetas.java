@@ -80,7 +80,7 @@ public class MenuTarjetas {
         String detalle = leerTexto("Detalle del informe (opcional, 5 a 100 caracteres): ");
 
         // Estado antes de registrar, para saber qué mensajes mostrar
-        int sancionesAntes = jugador.getSanciones().size();
+        Sancion ultimaAntes = ultimaSancion(jugador);
         int pendientesAntes = jugador.fechasPendientes();
         boolean estabaSuspendidoElPartido = partido.getEstado() == EstadoPartido.SUSPENDIDO;
 
@@ -104,7 +104,7 @@ public class MenuTarjetas {
             }
         } else {
             System.out.println("Tarjeta amarilla registrada para " + nombre + " en el minuto " + minuto + ".");
-            if (jugador.getSanciones().size() > sancionesAntes) {
+            if (ultimaSancion(jugador) != ultimaAntes) {
                 System.out.println("El jugador " + nombre
                         + " alcanzó 5 amarillas: se aplicará una suspensión y el contador se reinicia.");
             } else {
@@ -114,8 +114,8 @@ public class MenuTarjetas {
         }
 
         // --- RF14: mensajes de la sanción generada ---
-        if (jugador.getSanciones().size() > sancionesAntes) {
-            Sancion nueva = jugador.getSanciones().get(jugador.getSanciones().size() - 1);
+        Sancion nueva = ultimaSancion(jugador);
+        if (nueva != ultimaAntes) {
             String causa;
             if (Sancion.MOTIVO_ACUMULACION.equals(nueva.getMotivo())) {
                 causa = "por acumulación de " + ReglasJuego.AMARILLAS_PARA_SUSPENDER + " tarjetas amarillas";
@@ -297,6 +297,11 @@ public class MenuTarjetas {
     }
 
     // ------------------------------------------------------------------ utilidades
+    private Sancion ultimaSancion(Jugador j) {
+        List<Sancion> lista = j.getSanciones();
+        return lista.isEmpty() ? null : lista.get(lista.size() - 1);
+    }
+
     private String nombreCompleto(Jugador j) {
         return j.getNombres() + " " + j.getApellidos();
     }

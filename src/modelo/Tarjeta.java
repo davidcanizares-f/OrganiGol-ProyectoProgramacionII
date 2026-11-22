@@ -13,12 +13,6 @@ public abstract class Tarjeta {
     private String detalle;
 
     protected Tarjeta(Jugador jugador, Partido partido, int minuto, String detalle) {
-        if (jugador == null) {
-            throw new IllegalArgumentException("Error: debe seleccionar un jugador.");
-        }
-        if (partido == null) {
-            throw new IllegalArgumentException("Error: debe seleccionar un partido.");
-        }
         this.jugador = jugador;
         this.partido = partido;
         this.minuto = minuto;

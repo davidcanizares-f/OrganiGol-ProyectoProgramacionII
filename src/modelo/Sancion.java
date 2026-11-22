@@ -19,12 +19,6 @@ public class Sancion {
     private int fechasPendientes;
 
     public Sancion(Jugador jugador, Partido partidoOrigen, String motivo, int fechasPendientes) {
-        if (jugador == null || partidoOrigen == null) {
-            throw new IllegalArgumentException("Error: la tarjeta indicada no genera sanción.");
-        }
-        if (fechasPendientes <= 0) {
-            throw new IllegalArgumentException("Error: la tarjeta indicada no genera sanción.");
-        }
         this.jugador = jugador;
         this.partidoOrigen = partidoOrigen;
         this.motivo = motivo;

@@ -103,59 +103,365 @@ public class Partido {
     }
 
 
-    public void abrirRegistro() {
+    // ===== M3: RF06, RF07, RF08 =====
 
+    public String validarAbrirRegistro() {
+        if (estado == EstadoPartido.SUSPENDIDO || estado == EstadoPartido.CERRADO) {
+            return "Error: el partido está suspendido o cerrado y no puede continuar.";
+        }
+        if (estado == EstadoPartido.EN_REGISTRO || estado == EstadoPartido.FINALIZADO) {
+            return "Error: el registro del partido ya fue abierto.";
+        }
+        if (alineacionLocal == null || alineacionVisitante == null) {
+            return "Error: ambos equipos deben tener su alineación aprobada para abrir el registro.";
+        }
+        return null;
+    }
+
+    public void abrirRegistro() {
+        if (validarAbrirRegistro() != null) {
+            return;
+        }
+        this.estado = EstadoPartido.EN_REGISTRO;
+    }
+
+    public String validarFinalizarRegistro() {
+        if (estado == EstadoPartido.SUSPENDIDO || estado == EstadoPartido.CERRADO) {
+            return "Error: el partido está suspendido o cerrado y no puede continuar.";
+        }
+        if (estado != EstadoPartido.EN_REGISTRO) {
+            return "Error: el partido no está en registro.";
+        }
+        return null;
     }
 
     public void finalizarRegistro() {
+        if (validarFinalizarRegistro() != null) {
+            return;
+        }
+        this.estado = EstadoPartido.FINALIZADO;
+    }
 
+    public String getMarcador() {
+        return local.getNombre() + " " + golesDe(local) + " - " + golesDe(visitante) + " " + visitante.getNombre();
+    }
+
+    public int golesDe(Equipo equipo) {
+        if (equipo == null || (equipo != local && equipo != visitante)) {
+            return 0;
+        }
+        if (equipoSuspendido != null) {
+            if (equipo == equipoSuspendido) {
+                return 0;
+            } else {
+                return ReglasJuego.GOLES_VICTORIA_ADMIN;
+            }
+        }
+        int total = 0;
+        for (Gol g : goles) {
+            if (g.getEquipo() == equipo) {
+                total++;
+            }
+        }
+        return total;
+    }
+
+    public boolean estaEnAlineacion(Jugador jugador) {
+        if (jugador == null) {
+            return false;
+        }
+        boolean enLocal = alineacionLocal != null && alineacionLocal.contiene(jugador);
+        boolean enVisitante = alineacionVisitante != null && alineacionVisitante.contiene(jugador);
+        return enLocal || enVisitante;
+    }
+
+    public String validarGol(Jugador jugador, int minuto) {
+        if (estado != EstadoPartido.EN_REGISTRO) {
+            return "Error: el partido no está en registro.";
+        }
+        if (jugador == null) {
+            return "Error: campos obligatorios incompletos.";
+        }
+        if (!estaEnAlineacion(jugador)) {
+            String nombre = jugador.getNombres() + " " + jugador.getApellidos();
+            return "Error: el jugador '" + nombre + "' no está en la alineación de este partido.";
+        }
+        if (!negocio.Validador.minutoValido(minuto)) {
+            return "Error: el minuto debe estar entre 1 y 80.";
+        }
+        return null;
     }
 
     public Gol registrarGol(Jugador jugador, int minuto) {
+        if (validarGol(jugador, minuto) != null) {
+            return null;
+        }
+        Equipo equipoGol = jugador.getEquipo();
+        Gol gol = new Gol(jugador, equipoGol, minuto);
+        goles.add(gol);
+        return gol;
+    }
+
+    public String validarCambio(Equipo equipo, Jugador sale, Jugador entra, int minuto) {
+        if (equipo == null || sale == null || entra == null) {
+            return "Error: campos obligatorios incompletos.";
+        }
+        if (estado != EstadoPartido.EN_REGISTRO) {
+            return "Error: el partido no está en registro.";
+        }
+        if (equipo != local && equipo != visitante) {
+            return "Error: el equipo seleccionado no juega en este partido.";
+        }
+        if (contarCambios(equipo) >= ReglasJuego.CAMBIOS_MAXIMOS) {
+            return "Error: el equipo ya usó los 5 cambios permitidos.";
+        }
+        if (!puedeSalir(equipo, sale)) {
+            String nombreSale = sale.getNombres() + " " + sale.getApellidos();
+            return "Error: el jugador que sale '" + nombreSale + "' no puede ser sustituido (no está en la alineación, ya salió o fue expulsado).";
+        }
+        if (!puedeEntrar(equipo, entra, sale)) {
+            String nombreEntra = entra.getNombres() + " " + entra.getApellidos();
+            return "Error: el jugador que entra '" + nombreEntra + "' no es un suplente disponible.";
+        }
+        if (!negocio.Validador.minutoValido(minuto)) {
+            return "Error: el minuto debe estar entre 1 y 80.";
+        }
         return null;
     }
 
     public Cambio registrarCambio(Equipo equipo, Jugador sale, Jugador entra, int minuto) {
-        return null;
+        if (validarCambio(equipo, sale, entra, minuto) != null) {
+            return null;
+        }
+        Cambio cambio = new Cambio(equipo, sale, entra, minuto);
+        cambios.add(cambio);
+        return cambio;
     }
 
-    public Tarjeta registrarTarjeta(Jugador jugador, String tipo, int minuto, String detalle) {
-        return null;
-    }
-
-    public boolean estaEnAlineacion(Jugador jugador) {
+    private boolean puedeSalir(Equipo equipo, Jugador sale) {
+        if (sale == null) {
+            return false;
+        }
+        Alineacion alineacion = getAlineacion(equipo);
+        if (alineacion == null || !alineacion.contiene(sale)) {
+            return false;
+        }
+        if (estaExpulsado(sale)) {
+            return false;
+        }
+        for (Cambio c : cambios) {
+            if (c.getEquipo() == equipo && c.getJugadorSale() == sale) {
+                return false;
+            }
+        }
+        if (alineacion.esTitular(sale)) {
+            return true;
+        }
+        if (alineacion.esSuplente(sale)) {
+            for (Cambio c : cambios) {
+                if (c.getEquipo() == equipo && c.getJugadorEntra() == sale) {
+                    return true;
+                }
+            }
+        }
         return false;
+    }
+
+    private boolean puedeEntrar(Equipo equipo, Jugador entra, Jugador sale) {
+        if (entra == null || entra == sale) {
+            return false;
+        }
+        Alineacion alineacion = getAlineacion(equipo);
+        if (alineacion == null || !alineacion.esSuplente(entra)) {
+            return false;
+        }
+        if (estaExpulsado(entra)) {
+            return false;
+        }
+        for (Cambio c : cambios) {
+            if (c.getEquipo() == equipo && (c.getJugadorEntra() == entra || c.getJugadorSale() == entra)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // ===== M5: RF12, RF13, RF14 =====
+
+    // RF12: el partido debe estar en registro
+    public String validarPartidoEnRegistro() {
+        if (estado != EstadoPartido.EN_REGISTRO) {
+            return "Error: el partido no está en registro.";
+        }
+        return null;
+    }
+
+    // RF12: devuelve el mensaje de error si la tarjeta no se puede registrar, o null si se puede.
+    // tipo: "AMARILLA" o "ROJA". detalle es opcional (vacío = sin detalle).
+    public String validarTarjeta(Jugador jugador, String tipo, int minuto, String detalle) {
+        String errorEstado = validarPartidoEnRegistro();
+        if (errorEstado != null) {
+            return errorEstado;
+        }
+        if (jugador == null) {
+            return "Error: debe seleccionar un jugador.";
+        }
+        if (!estaEnAlineacion(jugador)) {
+            String nombre = jugador.getNombres() + " " + jugador.getApellidos();
+            return "Error: el jugador '" + nombre + "' no está en la alineación de este partido.";
+        }
+        if (estaExpulsado(jugador)) {
+            return "Error: el jugador ya fue expulsado en este partido.";
+        }
+        if (tipo == null || (!tipo.equalsIgnoreCase("AMARILLA") && !tipo.equalsIgnoreCase("ROJA"))) {
+            return "Error: debe seleccionar el tipo de tarjeta (amarilla o roja).";
+        }
+        if (!negocio.Validador.minutoValido(minuto)) {
+            return "Error: el minuto debe estar entre 1 y 80.";
+        }
+        if (detalle != null && !detalle.trim().isEmpty()
+                && !negocio.Validador.longitud(detalle, 5, 100)) {
+            return "Error: el detalle del informe debe tener entre 5 y 100 caracteres.";
+        }
+        return null;
+    }
+
+    // RF12, RF13, RF14: registra la tarjeta, aplica la sanción y verifica el mínimo de jugadores.
+    // Devuelve la tarjeta creada (la roja si la amarilla fue la segunda) o null si no se pudo registrar.
+    public Tarjeta registrarTarjeta(Jugador jugador, String tipo, int minuto, String detalle) {
+        if (validarTarjeta(jugador, tipo, minuto, detalle) != null) {
+            return null;
+        }
+        String detalleLimpio = (detalle == null || detalle.trim().isEmpty()) ? null : detalle.trim();
+        Tarjeta resultado;
+
+        if (tipo.equalsIgnoreCase("AMARILLA")) {
+            boolean segunda = contarAmarillas(jugador) >= 1;
+            if (!segunda) {
+                TarjetaAmarilla amarilla = new TarjetaAmarilla(jugador, this, minuto, detalleLimpio, false);
+                tarjetas.add(amarilla);
+                jugador.sumarAmarilla(this);
+                return amarilla;
+            }
+            // Segunda amarilla: roja automática; las dos amarillas no suman al contador
+            tarjetas.add(new TarjetaAmarilla(jugador, this, minuto, detalleLimpio, true));
+            jugador.revertirAmarilla(this);
+            TarjetaRoja roja = new TarjetaRoja(jugador, this, minuto, detalleLimpio, true);
+            tarjetas.add(roja);
+            jugador.aplicarSancion(this, Sancion.MOTIVO_DOBLE_AMARILLA, roja.fechasDeSancion());
+            resultado = roja;
+        } else {
+            TarjetaRoja roja = new TarjetaRoja(jugador, this, minuto, detalleLimpio, false);
+            tarjetas.add(roja);
+            jugador.aplicarSancion(this, Sancion.MOTIVO_ROJA_DIRECTA, roja.fechasDeSancion());
+            resultado = roja;
+        }
+
+        // Toda roja es una expulsión: se revisa el mínimo de jugadores del equipo
+        verificarMinimo(jugador.getEquipo());
+        return resultado;
     }
 
     public boolean estaExpulsado(Jugador jugador) {
+        if (jugador == null) {
+            return false;
+        }
+        for (Tarjeta t : tarjetas) {
+            if (t instanceof TarjetaRoja && t.getJugador() == jugador) {
+                return true;
+            }
+        }
         return false;
     }
 
+    // Titulares del equipo menos los expulsados que estaban en cancha.
+    // Los cambios son uno por uno, así que no modifican el conteo; un suplente que ya entró
+    // y es expulsado sí cuenta como expulsado en cancha.
     public int jugadoresEnCancha(Equipo equipo) {
-        return 0;
+        Alineacion alineacion = getAlineacion(equipo);
+        if (alineacion == null) {
+            return 0;
+        }
+        int enCancha = alineacion.getTitulares().size();
+        for (Tarjeta t : tarjetas) {
+            if (!(t instanceof TarjetaRoja)) {
+                continue;
+            }
+            Jugador j = t.getJugador();
+            if (alineacion.esTitular(j) || (alineacion.esSuplente(j) && ingresoPorCambio(equipo, j))) {
+                enCancha--;
+            }
+        }
+        return enCancha;
     }
 
+    // RF13: si al equipo le quedan menos de 7 en cancha, suspende el partido. Devuelve true si suspendió.
     public boolean verificarMinimo(Equipo equipo) {
+        if (jugadoresEnCancha(equipo) < ReglasJuego.MINIMO_EN_CANCHA) {
+            suspenderPorFaltaDeJugadores(equipo);
+            return true;
+        }
         return false;
     }
 
+    // RF13: el partido pasa a SUSPENDIDO; golesDe(equipo) usa equipoSuspendido para dar el 3-0
     public void suspenderPorFaltaDeJugadores(Equipo equipo) {
-
+        if (equipo == null || (equipo != local && equipo != visitante) || equipoSuspendido != null) {
+            return;
+        }
+        this.equipoSuspendido = equipo;
+        this.estado = EstadoPartido.SUSPENDIDO;
     }
 
-    public int golesDe(Equipo equipo) {
-        return 0;
-    }
-
-    public String getMarcador() {
+    // RF13: errores de la consulta de jugadores en cancha (equipo null = ambos equipos)
+    public String validarConsultaEnCancha(Equipo equipo) {
+        if (estado == EstadoPartido.PROGRAMADO) {
+            return "Error: el partido todavía no tiene el registro abierto.";
+        }
+        if (equipo != null && equipo != local && equipo != visitante) {
+            return "Error: el equipo seleccionado no juega en este partido.";
+        }
         return null;
     }
 
-
+    // RF12: filtros opcionales (null = sin filtro; tipo "AMARILLA" o "ROJA"). Ordena por minuto.
     public List<Tarjeta> filtrarTarjetas(Equipo equipo, Jugador jugador, String tipo) {
-        return null;
+        List<Tarjeta> resultado = new ArrayList<>();
+        for (Tarjeta t : tarjetas) {
+            if (equipo != null && t.getJugador().getEquipo() != equipo) {
+                continue;
+            }
+            if (jugador != null && t.getJugador() != jugador) {
+                continue;
+            }
+            if (tipo != null && !tipo.equalsIgnoreCase(t.getTipo())) {
+                continue;
+            }
+            resultado.add(t);
+        }
+        // sort es estable: la amarilla y la roja del mismo minuto conservan su orden
+        resultado.sort((a, b) -> Integer.compare(a.getMinuto(), b.getMinuto()));
+        return resultado;
     }
 
+    private int contarAmarillas(Jugador jugador) {
+        int total = 0;
+        for (Tarjeta t : tarjetas) {
+            if (t instanceof TarjetaAmarilla && t.getJugador() == jugador) {
+                total++;
+            }
+        }
+        return total;
+    }
+
+    private boolean ingresoPorCambio(Equipo equipo, Jugador jugador) {
+        for (Cambio c : cambios) {
+            if (c.getEquipo() == equipo && c.getJugadorEntra() == jugador) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     //Getters y Setters
     public Equipo getLocal() {
