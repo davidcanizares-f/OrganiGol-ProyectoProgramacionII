@@ -8,6 +8,7 @@ import modelo.EstadoPartido;
 import modelo.Gol;
 import modelo.Jugador;
 import modelo.Partido;
+import negocio.Validador;
 import negocio.ReglasJuego;
 
 import java.util.ArrayList;
@@ -161,13 +162,7 @@ public class MenuRegistroPartido {
             System.out.println("Error: campos obligatorios incompletos.");
             return;
         }
-        int indice;
-        try {
-            indice = Integer.parseInt(textoOpcion);
-        } catch (NumberFormatException e) {
-            System.out.println("Error: debe seleccionar un jugador.");
-            return;
-        }
+        int indice = Validador.aEntero(textoOpcion);
         if (indice < 1 || indice > jugadoresDisponibles.size()) {
             System.out.println("Error: debe seleccionar un jugador.");
             return;
@@ -180,13 +175,7 @@ public class MenuRegistroPartido {
             System.out.println("Error: campos obligatorios incompletos.");
             return;
         }
-        int minuto;
-        try {
-            minuto = Integer.parseInt(textoMinuto);
-        } catch (NumberFormatException e) {
-            System.out.println("Error: el minuto debe estar entre 1 y 80.");
-            return;
-        }
+        int minuto = Validador.aEntero(textoMinuto);
 
         String error = partido.validarGol(jugador, minuto);
         if (error != null) {
@@ -245,13 +234,7 @@ public class MenuRegistroPartido {
             System.out.println("Error: campos obligatorios incompletos.");
             return;
         }
-        int opcionEquipo;
-        try {
-            opcionEquipo = Integer.parseInt(textoEquipo);
-        } catch (NumberFormatException e) {
-            System.out.println("Error: el equipo seleccionado no juega en este partido.");
-            return;
-        }
+        int opcionEquipo = Validador.aEntero(textoEquipo);
         Equipo equipo = (opcionEquipo == 1) ? partido.getLocal()
                 : (opcionEquipo == 2) ? partido.getVisitante() : null;
         if (equipo == null) {
@@ -287,13 +270,7 @@ public class MenuRegistroPartido {
             System.out.println("Error: campos obligatorios incompletos.");
             return;
         }
-        int indiceSale;
-        try {
-            indiceSale = Integer.parseInt(textoSale);
-        } catch (NumberFormatException e) {
-            System.out.println("Error: campos obligatorios incompletos.");
-            return;
-        }
+        int indiceSale = Validador.aEntero(textoSale);
         if (indiceSale < 1 || indiceSale > jugadoresEnCancha.size()) {
             System.out.println("Error: campos obligatorios incompletos.");
             return;
@@ -317,13 +294,7 @@ public class MenuRegistroPartido {
             System.out.println("Error: campos obligatorios incompletos.");
             return;
         }
-        int indiceEntra;
-        try {
-            indiceEntra = Integer.parseInt(textoEntra);
-        } catch (NumberFormatException e) {
-            System.out.println("Error: campos obligatorios incompletos.");
-            return;
-        }
+        int indiceEntra = Validador.aEntero(textoEntra);
         if (indiceEntra < 1 || indiceEntra > suplentesDisponibles.size()) {
             System.out.println("Error: campos obligatorios incompletos.");
             return;
@@ -336,13 +307,7 @@ public class MenuRegistroPartido {
             System.out.println("Error: campos obligatorios incompletos.");
             return;
         }
-        int minuto;
-        try {
-            minuto = Integer.parseInt(textoMinuto);
-        } catch (NumberFormatException e) {
-            System.out.println("Error: el minuto debe estar entre 1 y 80.");
-            return;
-        }
+        int minuto = Validador.aEntero(textoMinuto);
 
         String error = partido.validarCambio(equipo, sale, entra, minuto);
         if (error != null) {
@@ -496,10 +461,6 @@ public class MenuRegistroPartido {
 
     private int leerEntero(Scanner sc, String mensaje) {
         String texto = leerTexto(sc, mensaje);
-        try {
-            return Integer.parseInt(texto);
-        } catch (NumberFormatException e) {
-            return -1;
-        }
+        return Validador.aEntero(texto);
     }
 }

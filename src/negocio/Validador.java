@@ -1,10 +1,7 @@
 
 package negocio;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.ResolverStyle;
+import java.time.YearMonth;
 
 public class Validador {
 
@@ -91,41 +88,70 @@ public class Validador {
         return minuto >= 1 && minuto <= 80;
     }
 
-    // Comprueba una fecha con formato dd/MM/uuuu
-    public static boolean fechaValida(String texto) {
+    // Convierte un texto en un entero sin lanzar errores.
+    // Devuelve -1 si el texto está vacío, no son solo dígitos o tiene más de 9 dígitos.
+    public static int aEntero(String texto) {
         if (!obligatorio(texto)) {
+            return -1;
+        }
+
+        String limpio = texto.trim();
+
+        if (limpio.length() > 9) {
+            return -1;
+        }
+
+        for (int i = 0; i < limpio.length(); i++) {
+            char digito = limpio.charAt(i);
+
+            if (digito < '0' || digito > '9') {
+                return -1;
+            }
+        }
+
+        return Integer.parseInt(limpio);
+    }
+
+    // Comprueba una fecha con formato dd/MM/aaaa (día y mes de 2 dígitos, año de 4)
+    public static boolean fechaValida(String texto) {
+        if (texto == null || texto.length() != 10
+                || texto.charAt(2) != '/' || texto.charAt(5) != '/') {
             return false;
         }
 
-        try {
-            DateTimeFormatter formato = DateTimeFormatter
-                    .ofPattern("dd/MM/uuuu")
-                    .withResolverStyle(ResolverStyle.STRICT);
+        String dia = texto.substring(0, 2);
+        String mes = texto.substring(3, 5);
+        String anio = texto.substring(6, 10);
 
-            LocalDate.parse(texto, formato);
-            return true;
-
-        } catch (Exception e) {
+        if (!soloDigitos(dia, 2) || !soloDigitos(mes, 2) || !soloDigitos(anio, 4)) {
             return false;
         }
+
+        int d = aEntero(dia);
+        int m = aEntero(mes);
+        int a = aEntero(anio);
+
+        if (a < 1 || m < 1 || m > 12 || d < 1) {
+            return false;
+        }
+
+        // Días del mes (considera los años bisiestos)
+        return d <= YearMonth.of(a, m).lengthOfMonth();
     }
 
     // Comprueba una hora con formato HH:mm
     public static boolean horaValida(String texto) {
-        if (!obligatorio(texto)) {
+        if (texto == null || texto.length() != 5 || texto.charAt(2) != ':') {
             return false;
         }
 
-        try {
-            DateTimeFormatter formato = DateTimeFormatter
-                    .ofPattern("HH:mm")
-                    .withResolverStyle(ResolverStyle.STRICT);
+        String horas = texto.substring(0, 2);
+        String minutos = texto.substring(3, 5);
 
-            LocalTime.parse(texto, formato);
-            return true;
-
-        } catch (Exception e) {
+        if (!soloDigitos(horas, 2) || !soloDigitos(minutos, 2)) {
             return false;
         }
+
+        return rango(aEntero(horas), 0, 23) && rango(aEntero(minutos), 0, 59);
     }
 }

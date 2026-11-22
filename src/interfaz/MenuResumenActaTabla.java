@@ -4,6 +4,7 @@ import modelo.Campeonato;
 import modelo.Partido;
 import modelo.TablaGoleadores;
 import modelo.TablaPosiciones;
+import negocio.Validador;
 import negocio.ActaArchivo;
 
 import java.util.List;
@@ -192,10 +193,6 @@ public class MenuResumenActaTabla {
 
     private int leerEntero(Scanner sc, String mensaje) {
         String texto = leerTexto(sc, mensaje);
-        try {
-            return Integer.parseInt(texto);
-        } catch (NumberFormatException e) {
-            return -1;
-        }
+        return Validador.aEntero(texto);
     }
 }
