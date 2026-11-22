@@ -1,6 +1,7 @@
 package interfaz;
 
 import modelo.Campeonato;
+import negocio.Validador;
 
 import java.util.Scanner;
 
@@ -43,11 +44,7 @@ public class MenuEquiposJugadores {
 
     // Número entero, o -1 si el texto está vacío o no es un número
     private int numero(String texto) {
-        try {
-            return Integer.parseInt(texto.trim());
-        } catch (NumberFormatException e) {
-            return -1;
-        }
+        return Validador.aEntero(texto);
     }
 
     private String pedir(Scanner sc, String mensaje) {

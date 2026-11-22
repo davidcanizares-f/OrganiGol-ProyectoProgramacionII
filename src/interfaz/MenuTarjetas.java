@@ -10,6 +10,7 @@ import modelo.Sancion;
 import modelo.Tarjeta;
 import modelo.TarjetaAmarilla;
 import modelo.TarjetaRoja;
+import negocio.Validador;
 import negocio.ReglasJuego;
 
 import java.util.ArrayList;
@@ -70,13 +71,7 @@ public class MenuTarjetas {
             System.out.println("Error: campos obligatorios incompletos.");
             return;
         }
-        int minuto;
-        try {
-            minuto = Integer.parseInt(textoMinuto);
-        } catch (NumberFormatException e) {
-            System.out.println("Error: el minuto debe estar entre 1 y 80.");
-            return;
-        }
+        int minuto = Validador.aEntero(textoMinuto);
         String detalle = leerTexto("Detalle del informe (opcional, 5 a 100 caracteres): ");
 
         // Estado antes de registrar, para saber qué mensajes mostrar
@@ -313,10 +308,6 @@ public class MenuTarjetas {
 
     private int leerEntero(String mensaje) {
         String texto = leerTexto(mensaje);
-        try {
-            return Integer.parseInt(texto);
-        } catch (NumberFormatException e) {
-            return -1;
-        }
+        return Validador.aEntero(texto);
     }
 }
