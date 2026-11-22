@@ -31,7 +31,6 @@ public class Jugador {
                    LocalDate fechaNacimiento,
                    int numeroCamiseta,
                    Equipo equipo) {
-
         this.carne = carne;
         this.nombres = nombres;
         this.apellidos = apellidos;
@@ -43,6 +42,72 @@ public class Jugador {
         this.amarillasAcumuladas = 0;
         this.sanciones = new ArrayList<>();
     }
+
+    //Getters y Setters
+    public String getCarne() {
+        return carne;
+    }
+
+    public String getNombres() {
+        return nombres;
+    }
+
+    public String getApellidos() {
+        return apellidos;
+    }
+
+    public String getCedula() {
+        return cedula;
+    }
+
+    public LocalDate getFechaNacimiento() {
+        return fechaNacimiento;
+    }
+
+    public int getNumeroCamiseta() {
+        return numeroCamiseta;
+    }
+
+    public EstadoJugador getEstado() {
+        return estado;
+    }
+
+    public int getAmarillasAcumuladas() {
+        return amarillasAcumuladas;
+    }
+
+    public String getMotivoBaja() {
+        return motivoBaja;
+    }
+
+    public List<Sancion> getSanciones() {
+        return sanciones;
+    }
+
+    public Equipo getEquipo() {
+        return equipo;
+    }
+
+    public void setNombres(String nombres) {
+        this.nombres = nombres;
+    }
+
+    public void setApellidos(String apellidos) {
+        this.apellidos = apellidos;
+    }
+
+    public void setCedula(String cedula) {
+        this.cedula = cedula;
+    }
+
+    public void setFechaNacimiento(LocalDate fechaNacimiento) {
+        this.fechaNacimiento = fechaNacimiento;
+    }
+
+    public void setNumeroCamiseta(int numeroCamiseta) {
+        this.numeroCamiseta = numeroCamiseta;
+    }
+
 
     //Metodos
 
@@ -166,69 +231,4 @@ public class Jugador {
         return false;
     }
     // ===== fin M5 =====
-
-    //Getters y Setters
-    public String getCarne() {
-        return carne;
-    }
-
-    public String getNombres() {
-        return nombres;
-    }
-
-    public String getApellidos() {
-        return apellidos;
-    }
-
-    public String getCedula() {
-        return cedula;
-    }
-
-    public LocalDate getFechaNacimiento() {
-        return fechaNacimiento;
-    }
-
-    public int getNumeroCamiseta() {
-        return numeroCamiseta;
-    }
-
-    public EstadoJugador getEstado() {
-        return estado;
-    }
-
-    public int getAmarillasAcumuladas() {
-        return amarillasAcumuladas;
-    }
-
-    public String getMotivoBaja() {
-        return motivoBaja;
-    }
-
-    public List<Sancion> getSanciones() {
-        return sanciones;
-    }
-
-    public Equipo getEquipo() {
-        return equipo;
-    }
-
-    public void setNombres(String nombres) {
-        this.nombres = nombres;
-    }
-
-    public void setApellidos(String apellidos) {
-        this.apellidos = apellidos;
-    }
-
-    public void setCedula(String cedula) {
-        this.cedula = cedula;
-    }
-
-    public void setFechaNacimiento(LocalDate fechaNacimiento) {
-        this.fechaNacimiento = fechaNacimiento;
-    }
-
-    public void setNumeroCamiseta(int numeroCamiseta) {
-        this.numeroCamiseta = numeroCamiseta;
-    }
 }
