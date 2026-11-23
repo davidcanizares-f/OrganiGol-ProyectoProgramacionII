@@ -5,7 +5,7 @@ import negocio.DatosDemo;
 
 import java.util.Scanner;
 
-/**
+/*
  * Programa principal de OrganiGol (gestión de una liga deportiva barrial).
  */
 public class Main {

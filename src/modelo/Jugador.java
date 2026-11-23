@@ -73,7 +73,7 @@ public class Jugador {
         }
     }
 
-    // AÑADIR METODO AL UML
+
     public String validarBaja(String motivo) {
         if (!Validador.longitud(motivo, 5, 100)) {
             return "Error: el motivo de la baja es obligatorio y debe tener entre 5 y 100 caracteres.";
@@ -112,7 +112,6 @@ public class Jugador {
 
     // Deshace el efecto de la amarilla que se contó en ese partido (para la roja por doble amarilla).
     // Si esa amarilla fue la quinta, también quita la sanción por acumulación que generó.
-    //AÑADIR METODO AL UML
     public void revertirAmarilla(Partido partido) {
         for (Sancion s : sanciones) {
             if (s.getPartidoOrigen() == partido && Sancion.MOTIVO_ACUMULACION.equals(s.getMotivo())) {

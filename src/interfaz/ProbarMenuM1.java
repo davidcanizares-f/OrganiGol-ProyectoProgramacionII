@@ -5,7 +5,7 @@ import negocio.DatosDemo;
 
 import java.util.Scanner;
 
-/**
+/*
  * Prueba el menú del módulo 1 con un escenario de DatosDemo.
  * 1. Campeonato sin configurar (RF01 debe pedir primero configurarlo)
  * 2. Campeonato con 4 equipos de 10 jugadores cada uno (RF01 y RF02)

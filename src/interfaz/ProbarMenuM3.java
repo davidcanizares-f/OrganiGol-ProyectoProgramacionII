@@ -5,7 +5,7 @@ import negocio.DatosDemo;
 
 import java.util.Scanner;
 
-/**
+/*
  * Prueba el menú del módulo 3 con el escenario de DatosDemo:
  * Campeonato con partidos, alineaciones aprobadas y el primer partido en EN_REGISTRO.
  */

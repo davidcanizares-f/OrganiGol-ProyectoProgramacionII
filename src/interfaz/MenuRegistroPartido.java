@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-/**
+/*
  * Menú del módulo 3: registro del partido (RF06, RF07 y RF08).
  * Uso: new MenuRegistroPartido().mostrar(campeonato, scanner);
  */

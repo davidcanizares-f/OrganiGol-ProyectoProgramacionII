@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-/**
+/*
  * Menú del módulo 1: gestión de equipos (RF01).
  * Uso: new MenuEquipos().mostrar(campeonato, scanner);
  *

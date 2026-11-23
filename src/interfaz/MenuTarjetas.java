@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-/**
+/*
  * Menú del módulo 5: tarjetas y sanciones (RF12, RF13 y RF14).
  * Uso: new MenuTarjetas().mostrar(campeonato, scanner);
  */
@@ -245,7 +245,7 @@ public class MenuTarjetas {
         return partidos.get(op - 1);
     }
 
-    /** Devuelve null si el usuario elige "todos". */
+    /* Devuelve null si el usuario elige "todos". */
     private Equipo seleccionarEquipoDelPartido(Partido partido, String titulo) {
         System.out.println(titulo + ": 0. Todos  1. " + partido.getLocal().getNombre()
                 + "  2. " + partido.getVisitante().getNombre());
@@ -255,7 +255,7 @@ public class MenuTarjetas {
         return null;
     }
 
-    /**
+    /*
      * Lista los jugadores de las alineaciones del partido (filtrando por equipo si se indica).
      * Si opcional es true, 0 significa "sin filtro" y devuelve null.
      */

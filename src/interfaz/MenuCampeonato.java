@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-/**
+/*
  * Menú del módulo 2: campeonato y preparación del partido (RF03, RF04 y RF05).
  * Uso: new MenuCampeonato().mostrar(campeonato, scanner);
  *

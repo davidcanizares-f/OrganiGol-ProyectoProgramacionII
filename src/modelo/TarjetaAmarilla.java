@@ -1,8 +1,6 @@
 package modelo;
 
-/**
- * Resumen de la Clase pedido a una IA:
- * Tarjeta amarilla. No genera fechas por sí sola: cuenta en el acumulado del jugador (RF14). */
+/*Tarjeta amarilla. No genera fechas por sí sola: cuenta en el acumulado del jugador (RF14). */
 public class TarjetaAmarilla extends Tarjeta {
 
     private boolean esSegundaAmarilla;

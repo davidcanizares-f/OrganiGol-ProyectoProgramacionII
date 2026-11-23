@@ -1,7 +1,6 @@
 package modelo;
 
-/**
- * Resumen de la Clase pedido a una IA:
+/*
  * Sanción de un jugador (RF14). Nace de una tarjeta en un partido de origen.
  * Las fechas nuevas de un jugador ya suspendido son OTRA Sancion; el total
  * se obtiene con Jugador.fechasPendientes().
@@ -25,7 +24,7 @@ public class Sancion {
         this.fechasPendientes = fechasPendientes;
     }
 
-    /** Resta una fecha (nunca baja de 0). */
+    /* Resta una fecha (nunca baja de 0). */
     public void descontarFecha() {
         if (fechasPendientes > 0) {
             fechasPendientes--;

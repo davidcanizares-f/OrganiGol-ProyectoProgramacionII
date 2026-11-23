@@ -1,7 +1,6 @@
 package modelo;
 
-/**
- * Resumen de la Clase pedido a una IA:
+/*
  * Tarjeta de un partido (RF12). Clase abstracta: TarjetaAmarilla y TarjetaRoja
  * deciden cuántas fechas de sanción genera cada una y cuál es su tipo.
  */
@@ -19,10 +18,10 @@ public abstract class Tarjeta {
         this.detalle = detalle;
     }
 
-    /** Fechas de suspensión que genera esta tarjeta. */
+    /* Fechas de suspensión que genera esta tarjeta. */
     public abstract int fechasDeSancion();
 
-    /** "AMARILLA" o "ROJA". */
+    /* "AMARILLA" o "ROJA". */
     public abstract String getTipo();
 
     // ---------- getters y setters (no se dibujan en el UML) ----------

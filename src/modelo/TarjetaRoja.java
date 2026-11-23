@@ -2,9 +2,7 @@ package modelo;
 
 import negocio.ReglasJuego;
 
-/**
- * Resumen de la Clase pedido a una IA:
- * Tarjeta roja. Por doble amarilla = 1 fecha; directa = 2 fechas (un solo nivel, sin gravedad).
+/*Tarjeta roja. Por doble amarilla = 1 fecha; directa = 2 fechas (un solo nivel, sin gravedad).
  */
 public class TarjetaRoja extends Tarjeta {
 

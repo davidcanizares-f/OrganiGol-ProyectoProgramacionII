@@ -5,7 +5,7 @@ import negocio.Validador;
 
 import java.util.Scanner;
 
-/**
+/*
  * Menú del módulo 1: equipos y jugadores (RF01 y RF02).
  * Uso: new MenuEquiposJugadores().mostrar(campeonato, scanner);
  */

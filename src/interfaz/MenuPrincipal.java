@@ -5,7 +5,7 @@ import negocio.Validador;
 
 import java.util.Scanner;
 
-/**
+/*
  * Menú principal de OrganiGol: reúne los menús de los cinco módulos.
  * Uso: new MenuPrincipal().mostrar(campeonato, scanner);
  */
