@@ -24,7 +24,9 @@ public class MenuPrincipal {
             System.out.println("4. Tarjetas y sanciones");
             System.out.println("5. Resumen, acta y tabla");
             System.out.println("0. Salir");
-            opcion = numero(pedir(sc, "Opción: "));
+            System.out.print("Opción: ");
+            // Si ya no hay más entrada (fin de archivo), se sale del menú
+            opcion = sc.hasNextLine() ? numero(sc.nextLine().trim()) : 0;
 
             switch (opcion) {
                 case 1:
@@ -48,10 +50,6 @@ public class MenuPrincipal {
                     System.out.println("Opción no válida.");
             }
 
-            // Si ya no hay más entrada (por ejemplo, una prueba con texto fijo), se sale
-            if (opcion != 0 && !sc.hasNextLine()) {
-                opcion = 0;
-            }
         } while (opcion != 0);
 
         System.out.println("Hasta pronto.");
